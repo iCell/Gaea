@@ -7,15 +7,19 @@ tags:
 
 区块链现在有多火自然不用说，绝大部分现在的行情都是用了 [CoinmarketCap](https://coinmarketcap.com) 的数据，之前我用 Swift 对其提供的 API 进行了一下简单的封装（具体代码可以在 [Github](https://github.com/iCell/CryptoCurrencyKit) 上见到），也直接使用这个 API 自己写了个 macOS 的行情 app 叫做 [Pistis](https://itunes.apple.com/tr/app/pistis/id1290746332?mt=12&ign-mpt=uo%3D2)，不过这次我们就直接用 **CloudKit JS** 来写一个实时抓取 [CoinmarketCap](https://coinmarketcap.com) 行情数据并存储到 **CloudKit** 数据库上的脚本。
 
+<!-- more -->
+
 ### 准备工作
 
-想使用 **CloudKit**，自然是需要一个 Apple Developer 的账户的。然后呢随意创建一个 macOS 或者 iOS 的 app，在 Capability 中打开 iCloud 功能，然后创建一个 **CloudKit Container**，然后进入 Dashboard 进行操作（具体关于 CloudKit 的一些概念这里就不多说了，这次主要讲 CloudKit JS，如有不清楚可先查看一些 [CloudKit](https://developer.apple.com/documentation/cloudkit) 文档）。我们在 Dashboard 进入 Data 选项，在 Record Type 一栏创建新的 Record，这里取名叫 ```CryptoCurrency```，然后增加一些 Field，然后对某些需要进行索引、查询、排序的字段增加相应的操作权限，我所做的操作如下图所示：
+想使用 **CloudKit**，自然是需要一个 Apple Developer 的账户的。然后呢随意创建一个 macOS 或者 iOS 的 app，在 Capability 中打开 iCloud 功能，然后创建一个 **CloudKit Container**，然后进入 Dashboard 进行操作（具体关于 CloudKit 的一些概念这里就不多说了，这次主要讲 CloudKit JS，如有不清楚可先查看一些 [CloudKit](https://developer.apple.com/documentation/cloudkit) 文档）。我们在 Dashboard 进入 Data 选项，在 Record Type 一栏创建新的 Record，这里取名叫 `CryptoCurrency`，然后增加一些 Field，然后对某些需要进行索引、查询、排序的字段增加相应的操作权限，我所做的操作如图所示：
+
 
 ![Record-Fields](http://7xjbza.com1.z0.glb.clouddn.com/cloudkit-dashboard-record-fields.png)
 
+
 然后呢，我们既然是写脚本来操作 **CloudKit** 数据库，肯定是要获取权限的。在 Dashboard 的 API Access 中，生成一个 server-to-server 的 key，生成 key 的过程中会有一个 eckey.pem 的文件，保留这个文件之后要用到。
 
-紧接着在 Data 中的 Security Roles 一栏中，要将刚刚创建的 ```CryptoCurrency``` 增加访问权限，在 **CloudKit** 中有三种不同的访问类别，分别是：
+紧接着在 Data 中的 Security Roles 一栏中，要将刚刚创建的 `CryptoCurrency` 增加访问权限，在 **CloudKit** 中有三种不同的访问类别，分别是：
 
 * **World**：代表不管你是不是 iCloud 用户，所有人都能访问
 * **Authenticated**：只有登陆了 iCloud 的用户才能访问
@@ -27,7 +31,6 @@ tags:
 
 我们创建一个 JS 的项目，可以直接执行 `npm init` 命令，然后在 `package.json` 文件中的 `scripts` 下增加一个脚本：
 
-
 ```JavaScript
 "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -35,15 +38,15 @@ tags:
   },
 ```
 
-然后在命令行中输入 `npm run install-cloudkit-js` 即可将 ```cloudkit.js``` 文件下载到我们的项目中。
+然后在命令行中输入 `npm run install-cloudkit-js` 即可将 `cloudkit.js` 文件下载到我们的项目中。
 
-使用 **CloudKit JS** 都是直接使用 ```Promise``` 的方式进行 API 的请求的，另外我们需要使用 CoinmarketCap 提供的 API 数据，所以我们需要使用 ```fetch``` 来作为网络库：
+使用 **CloudKit JS** 都是直接使用 `Promise` 的方式进行 API 的请求的，另外我们需要使用 CoinmarketCap 提供的 API 数据，所以我们需要使用 `fetch` 来作为网络库：
 
-```
+```Shell
 npm install --save node-fetch
 ```
 
-然后呢，我们把之前生成 server-to-server key 中的 ```eckey.pem``` 文件保存到项目的根目录中来，继续创建一个名为 `config.js` 的文件，作为 CloudKit JS 的配置文件：
+然后呢，我们把之前生成 server-to-server key 中的 `eckey.pem` 文件保存到项目的根目录中来，继续创建一个名为 `config.js` 的文件，作为 CloudKit JS 的配置文件：
 
 ``` JavaScript
 module.exports = {
@@ -58,9 +61,9 @@ module.exports = {
 };
 ```
 
-上面的 containerIdentifier 是用一开始创建 macOS 或者 iOS app 是生成 ```Container``` 是的那个名称，必须是以 iCloud 开头的，keyID 的话就用之前在 Dashboard 中生成的 key.
+上面的 containerIdentifier 是用一开始创建 macOS 或者 iOS app 是生成 `Container` 是的那个名称，必须是以 iCloud 开头的，keyID 的话就用之前在 Dashboard 中生成的 key.
 
-我们继续再创建一个文件叫做 ```app.js``` ，用来编写我们该脚本的实现代码。在 ```app.js``` 中我们先 import 所需要的一些库和文件：
+我们继续再创建一个文件叫做 `app.js` ，用来编写我们该脚本的实现代码。在 `app.js` 中我们先 import 所需要的一些库和文件：
 
 ``` JavaScript
 const fetch = require('node-fetch');
@@ -110,7 +113,7 @@ container.setUpAuth()
 
 必须要获取授权后，才能执行数据库操作，这里先简单介绍一下几个常用的操作。首先是查询：
 
-```
+```JavaScript
 let query = { recordType: 'CryptoCurrency' };
 // return Promise
 database.performQuery(query);
@@ -118,7 +121,7 @@ database.performQuery(query);
 
 然后是保存 record 操作，必须要按下列的格式进行 JSON 数据的封装，recordType 可以理解为表的名字，recordName 为每个 record 的唯一 id，fields 中是每个 record 的自定义信息，每条信息需要将值封装在 value 字段中：
 
-```
+```JavaScript
 let record = {
             recordType: 'CryptoCurrency',
             recordName: 'Name',
@@ -131,9 +134,9 @@ let record = {
 database.saveRecords(record)
 ```
 
-如果是修改操作的话，需要先进行查询操作，查询返回的 records 结果中，每一条 record 会有一个 ```recordChangeTag``` 字段，需要将该字段作为 key 添加到要更新的数据中。类似下面方法来更新数据：
+如果是修改操作的话，需要先进行查询操作，查询返回的 records 结果中，每一条 record 会有一个 `recordChangeTag` 字段，需要将该字段作为 key 添加到要更新的数据中。类似下面方法来更新数据：
 
-```
+```JavaScript
 let queriedRecord = {
             recordType: 'CryptoCurrency',
             recordChangeTag: 'a tag'
