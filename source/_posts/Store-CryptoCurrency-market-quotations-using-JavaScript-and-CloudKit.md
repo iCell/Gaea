@@ -5,7 +5,7 @@ tags:
 ---
 在 2014 年 Apple 推出了 **CloudKit**，能让开发者们直接使用一系列接口来创建基于 iCloud 托管数据的 app，但是一开始推出 CloudKit 只能允许开发者们通过使用 CloudKit framework 来使用 CloudKit 接口，随后，Apple 又继续推出 **CloudKit Web Services**，允许直接通过 HTTPS+JSON 的方式来访问 CloudKit 接口，再然后，Apple 还提供了 **CloudKit JS**，允许开发者直接使用 CloudKit JS 提供的一些 REST API 来直接操作 CloudKit 数据库，轻松创建基于 iCloud 的 Web app. 它所提供的功能除了基本的对数据库的 CRUD 操作之外，还提供了使用 iCloud 账号体系的能力，同时包括对 CloudKit 数据库操作的一些订阅和通知功能。再随后，随之 CloudKit 支持 **server-to-server** 的操作，便能够有这个想法的诞生，让你可以通过 CloudKit 来存储区块链加密货币的实时行情数据。
 
-区块链现在有多火自然不用说，绝大部分现在的行情都是用了 [CoinmarketCap](https://coinmarketcap.com) 的数据，之前我用 Swift 对其提供的 API 进行了一下简单的封装（具体代码可以在 [Github](https://github.com/iCell/CryptoCurrencyKit) 上见到），也直接使用这个 API 自己写了个 macOS 的行情 app 叫做 [Pistis](https://itunes.apple.com/tr/app/pistis/id1290746332?mt=12&ign-mpt=uo%3D2)，不过这次我们就直接用 **CloudKit JS** 来写一个实时抓取 [CoinmarketCap](https://coinmarketcap.com) 行情数据并存储到 **CloudKit** 数据库上的脚本。
+区块链现在有多火自然不用说，绝大部分现在的行情都是用了 [CoinmarketCap](https://coinmarketcap.com) 的数据，之前我用 Swift 对其提供的 API 进行了一下简单的封装（具体代码可以在 [Github](https://github.com/iCell/CryptoCurrencyKit) 上见到），也直接使用这个 API 自己写了个 macOS 的行情 app 叫做 [Pistis](https://itunes.apple.com/cn/app/pistis/id1290746332?l=en&mt=12)，不过这次我们就直接用 **CloudKit JS** 来写一个实时抓取 [CoinmarketCap](https://coinmarketcap.com) 行情数据并存储到 **CloudKit** 数据库上的脚本。
 
 <!-- more -->
 
