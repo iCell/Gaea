@@ -1,9 +1,10 @@
 ---
-title: core in NSObject
+title: NSObject 对象本质
 date: 2018-04-19 19:03:18
 tags:
 ---
 我们都知道，Objective-C 中的对象、类都是基于 C/C++ 中的结构体实现的。而在 Apple 的接口文档中，可以发现 NSObject 的定义如下：
+<!-- more -->
 
 ```objc
 @interface NSObject <NSObject> {
