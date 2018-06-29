@@ -50,7 +50,7 @@ end
 
 在这里用到了 `self()`，这里是获取到当前调用 `self()` 所在 process 的 PID，然后将该 PID 和一个字符串信息发送到了 HelloWorld module 中，HelloWorld module 的 process 收到信息后会返回一个消息，返回的消息会放入一个消息池中，当用 `receive` 的时候，就会去池子中取出，达到了接收的效果。
 
-在上述代码之后，我们如果继续向 pid 发送消息并进行接收，那么将接收不到任何消息，这是因为第一次发送消息后，`HelloWorld.hello` 接收到了然后就运行结束了，比如下面的代码将会超时打印出 “time out”：
+在上述代码之后，我们如果继续向 pid 发送消息并进行接收，那么将接收不到任何消息，这是因为 `HelloWorld.hello` 只会处理一次接受信息的事件，第一次发送消息后，`HelloWorld.hello` 接收到了然后就运行结束了，比如下面的代码将会超时打印出 “time out”：
 
 ``` elixir
 send pid, {self(), "second"}
